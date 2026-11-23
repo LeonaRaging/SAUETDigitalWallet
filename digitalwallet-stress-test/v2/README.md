@@ -6,7 +6,7 @@
 | `uc1.js` | UC1: the same transfer sent 20× at once with one `Idempotency-Key` must debit **once**. |
 | `uc2.js` | UC2: two transfers at once that together exceed the balance — **at most one** may succeed. |
 | `money_check.sql` | After a load test: no money created or lost, every balance matches its transactions, none negative. |
-| `LoadTest.ipynb` | Kaggle notebook: setup, smoke, load, hot wallet, long history, stress, UC1, UC2, results table. |
+| `LoadTest.ipynb` | Kaggle notebook: runs every test for several versions in one session and prints them side by side. |
 
 Run one test by hand (app running, fresh DB):
 
@@ -31,5 +31,10 @@ transfers. Add these when those Phase 2 changes exist, or those versions will lo
 **Stress** = `load.js` at increasing `RATE` (the notebook runs 100 → 800). The highest rate that still
 passes is the most load the version can sustain.
 
-**On Kaggle:** set `BRANCH` in the notebook to the version to test, Internet on, Save & Run All.
+**On Kaggle:** set `BRANCHES` (e.g. `['v1-baseline', 'v2-consistency']`) and `TESTS`, Internet on,
+Save & Run All. Every test runs once per version, back to back with alternating order, so all versions
+get the same machine — Kaggle machines differ by up to ~50 % between sessions, so only compare
+versions from the **same** session. The test files always come from `TESTS_FROM` (default `main`).
 The app + MySQL are pinned to CPUs 0,2 and k6 to CPUs 1,3 (one physical core each).
+Each version's results land in `<OUT>/<branch>/`, plus `machine.txt` (CPU info and commits) and
+`<test>_money.json` (money check) for each load test.
