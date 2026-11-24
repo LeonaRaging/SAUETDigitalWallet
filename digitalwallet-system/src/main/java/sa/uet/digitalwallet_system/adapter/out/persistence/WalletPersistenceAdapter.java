@@ -42,4 +42,14 @@ public class WalletPersistenceAdapter implements LoadWalletPort, SaveWalletPort 
         WalletJpaEntity saved = walletRepository.save(entity);
         return walletMapper.toDomain(saved);
     }
+
+    @Override
+    public boolean debitIfSufficient(Long walletId, double amount) {
+        throw new UnsupportedOperationException("TODO I2");
+    }
+
+    @Override
+    public boolean credit(Long walletId, double amount) {
+        throw new UnsupportedOperationException("TODO I2");
+    }
 }
