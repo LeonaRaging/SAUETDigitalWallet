@@ -17,4 +17,6 @@ public class TransferCommand {
     Long amount;
 
     String description;
+
+    String idempotencyKey;
 }

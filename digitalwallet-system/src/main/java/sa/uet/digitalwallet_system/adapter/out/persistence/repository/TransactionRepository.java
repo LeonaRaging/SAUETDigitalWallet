@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import sa.uet.digitalwallet_system.adapter.out.persistence.entity.TransactionJpaEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<TransactionJpaEntity, Long> {
 
@@ -15,4 +16,6 @@ public interface TransactionRepository extends JpaRepository<TransactionJpaEntit
             ORDER BY t.createdAt DESC
             """)
     List<TransactionJpaEntity> findByWalletId(@Param("walletId") Long walletId);
+
+    Optional<TransactionJpaEntity> findByReferenceCode(@Param("referenceCode") String referenceCode);
 }

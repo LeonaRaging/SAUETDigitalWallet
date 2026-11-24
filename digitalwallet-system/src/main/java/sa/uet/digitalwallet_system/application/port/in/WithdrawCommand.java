@@ -16,4 +16,6 @@ public class WithdrawCommand {
     Long amount;
 
     String description;
+
+    String idempotencyKey;
 }

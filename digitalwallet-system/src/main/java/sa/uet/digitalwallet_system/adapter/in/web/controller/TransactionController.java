@@ -50,13 +50,15 @@ public class TransactionController {
     })
     public ResponseEntity<ApiResponse<TransactionResponse>> topup(
             @AuthenticationPrincipal Long userId,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody TopupRequest request) {
         Wallet wallet = getWalletUseCase.getWallet(userId);
         TopupCommand command = new TopupCommand(
                 wallet.getId(),
                 request.getLinkedBankAccountId(),
                 request.getAmount(),
-                request.getDescription()
+                request.getDescription(),
+                idempotencyKey
         );
         Transaction tx = topupUseCase.topup(command);
         return ResponseEntity.ok(ApiResponse.success("Topup successful", TransactionResponse.fromDomain(tx)));
@@ -75,13 +77,15 @@ public class TransactionController {
     })
     public ResponseEntity<ApiResponse<TransactionResponse>> withdraw(
             @AuthenticationPrincipal Long userId,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody WithdrawRequest request) {
         Wallet wallet = getWalletUseCase.getWallet(userId);
         WithdrawCommand command = new WithdrawCommand(
                 wallet.getId(),
                 request.getLinkedBankAccountId(),
                 request.getAmount(),
-                request.getDescription()
+                request.getDescription(),
+                idempotencyKey
         );
         Transaction tx = withdrawUseCase.withdraw(command);
         return ResponseEntity.ok(ApiResponse.success("Withdraw successful", TransactionResponse.fromDomain(tx)));
@@ -96,17 +100,21 @@ public class TransactionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Not authenticated",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Source or target wallet not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Idempotency key already used but transaction doesn't match",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ApiResponse<TransactionResponse>> transfer(
             @AuthenticationPrincipal Long userId,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody TransferRequest request) {
         Wallet wallet = getWalletUseCase.getWallet(userId);
         TransferCommand command = new TransferCommand(
                 wallet.getId(),
                 request.getTargetWalletNumber(),
                 request.getAmount(),
-                request.getDescription()
+                request.getDescription(),
+                idempotencyKey
         );
         Transaction tx = transferUseCase.transfer(command);
         return ResponseEntity.ok(ApiResponse.success("Transfer successful", TransactionResponse.fromDomain(tx)));

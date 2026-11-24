@@ -10,6 +10,7 @@ import sa.uet.digitalwallet_system.application.port.out.SaveTransactionPort;
 import sa.uet.digitalwallet_system.domain.model.Transaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,5 +33,11 @@ public class TransactionPersistenceAdapter implements SaveTransactionPort, LoadT
                 .stream()
                 .map(transactionEntityMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Transaction> loadByReferenceCode(String referenceCode) {
+        return transactionRepository.findByReferenceCode(referenceCode)
+                .map(transactionEntityMapper::toDomain);
     }
 }

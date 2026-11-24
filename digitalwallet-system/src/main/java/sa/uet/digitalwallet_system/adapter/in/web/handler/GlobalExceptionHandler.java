@@ -67,10 +67,16 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation failed", request.getRequestURI(), fieldErrors);
     }
 
+    @ExceptionHandler(IdempotencyKeyReusedException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyKeyReusedException(IdempotencyKeyReusedException ex, HttpServletRequest request) {
+        return buildErrorResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), request.getRequestURI(), null);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI(), null);
     }
+
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message, String path, Map<String, String> errors) {
         ErrorResponse body = ErrorResponse.builder()

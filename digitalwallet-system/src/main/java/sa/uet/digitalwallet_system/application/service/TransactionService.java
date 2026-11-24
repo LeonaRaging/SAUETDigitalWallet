@@ -11,6 +11,8 @@ import sa.uet.digitalwallet_system.domain.model.Wallet;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,11 +25,41 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
     private final SaveTransactionPort saveTransactionPort;
     private final LoadTransactionPort loadTransactionPort;
 
+    private Optional<Transaction> findPrevious(String key, String type, Long sourceWalletId,
+                                               Long targetWalletId, Long linkedBankId, Long amount) {
+        if (key == null) {
+            return Optional.empty();
+        }
+        return loadTransactionPort.loadByReferenceCode(key).map(existing -> {
+            boolean sameRequest = type.equals(existing.getType())
+                    && Objects.equals(sourceWalletId, existing.getSourceWalletId())
+                    && Objects.equals(targetWalletId, existing.getTargetWalletId())
+                    && Objects.equals(linkedBankId, existing.getLinkedBankAccountId())
+                    && amount.equals(existing.getAmount());
+            if (!sameRequest) {
+                throw new IdempotencyKeyReusedException(key);
+            }
+            return existing;
+        });
+    }
+
     @Override
     @Transactional
     public Transaction topup(TopupCommand command) {
         Wallet wallet = loadWalletPort.loadById(command.getWalletId())
                 .orElseThrow(WalletNotFoundException::new);
+
+        String key = command.getIdempotencyKey();
+        if (key == null) {
+            key = UUID.randomUUID().toString();
+        } else {
+            Optional<Transaction> existingTransaction = findPrevious(key, "TOPUP", null,
+                    wallet.getId(), command.getLinkedBankAccountId(), command.getAmount());
+
+            if (existingTransaction.isPresent()) {
+                return existingTransaction.get();
+            }
+        }
 
         if (!"ACTIVE".equals(wallet.getStatus())) {
             throw new WalletNotActiveException(wallet.getWalletNumber());
@@ -44,7 +76,7 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
 
         // Append ledger entry
         Transaction tx = Transaction.builder()
-                .referenceCode(UUID.randomUUID().toString())
+                .referenceCode(key)
                 .type("TOPUP")
                 .sourceWalletId(null)
                 .targetWalletId(wallet.getId())
@@ -62,6 +94,17 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
     public Transaction withdraw(WithdrawCommand command) {
         Wallet wallet = loadWalletPort.loadById(command.getWalletId())
                 .orElseThrow(WalletNotFoundException::new);
+        String key = command.getIdempotencyKey();
+        if (key == null) {
+            key = UUID.randomUUID().toString();
+        } else {
+            Optional<Transaction> existingTransaction = findPrevious(key, "WITHDRAW", wallet.getId(),
+                    null, command.getLinkedBankAccountId(), command.getAmount());
+
+            if (existingTransaction.isPresent()) {
+                return existingTransaction.get();
+            }
+        }
 
         if (!"ACTIVE".equals(wallet.getStatus())) {
             throw new WalletNotActiveException(wallet.getWalletNumber());
@@ -80,7 +123,7 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
         saveWalletPort.save(updated);
 
         Transaction tx = Transaction.builder()
-                .referenceCode(UUID.randomUUID().toString())
+                .referenceCode(key)
                 .type("WITHDRAW")
                 .sourceWalletId(wallet.getId())
                 .targetWalletId(null)
@@ -100,6 +143,17 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
                 .orElseThrow(WalletNotFoundException::new);
         Wallet target = loadWalletPort.loadByWalletNumber(command.getTargetWalletNumber())
                 .orElseThrow(() -> new WalletNotFoundException("Target wallet not found: " + command.getTargetWalletNumber()));
+        String key = command.getIdempotencyKey();
+        if (key == null) {
+            key = UUID.randomUUID().toString();
+        } else {
+            Optional<Transaction> existingTransaction = findPrevious(key, "TRANSFER", source.getId(),
+                    target.getId(), null, command.getAmount());
+
+            if (existingTransaction.isPresent()) {
+                return existingTransaction.get();
+            }
+        }
 
         if (source.getId().equals(target.getId())) {
             throw new IllegalArgumentException("Cannot transfer to the same wallet");
@@ -121,7 +175,7 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
         saveWalletPort.save(target.withBalance(target.getBalance() + command.getAmount()).withUpdatedAt(now));
 
         Transaction tx = Transaction.builder()
-                .referenceCode(UUID.randomUUID().toString())
+                .referenceCode(key)
                 .type("TRANSFER")
                 .sourceWalletId(source.getId())
                 .targetWalletId(target.getId())

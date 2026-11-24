@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import sa.uet.digitalwallet_system.adapter.in.security.JwtAuthenticationFilter;
@@ -37,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TransferEndpointTest {
     private static final String PATH = "/api/v1/transactions/transfer";
     private static final String BODY = "{\"targetWalletNumber\":\"WAL20\",\"amount\":250,\"description\":\"Chuyen tien\"}";
+    private static final String KEY = "3f6c1a2e-8b4d-4e9a-9c7b-5d2e1f0a7b31";
     @Autowired WebApplicationContext context;
     @Autowired JwtTokenGenerator tokenGenerator;
     @MockitoBean GetWalletUseCase getWalletUseCase;
@@ -129,9 +131,41 @@ class TransferEndpointTest {
         noBusinessCalls();
     }
 
-    private org.springframework.test.web.servlet.ResultActions request(String body, String jwt) throws Exception {
+    @Test void idempotencyKeyHeaderBecomeReferenceCode() throws Exception {
+        stub(wallet(10, 1000, "ACTIVE"), wallet(20, 500, "ACTIVE"));
+        requestWithKey(KEY).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.referenceCode").value(KEY));
+    }
+
+    @Test void retryWithSameKeyReturnsSameTransactionWithoutWrites() throws Exception {
+        stub(wallet(10, 1000, "ACTIVE"), wallet(20, 500, "ACTIVE"));
+        when(loadTransactionPort.loadByReferenceCode(KEY)).thenReturn(Optional.of(
+                Transaction.builder().id(101L).referenceCode(KEY).type("TRANSFER")
+                        .sourceWalletId(10L).targetWalletId(20L).amount(250L).build()));
+        requestWithKey(KEY).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(101));
+        noWrites();
+    }
+
+    @Test void sameKeyDifferentBodyReturns422WithoutWrites() throws Exception {
+        stub(wallet(10, 1000, "ACTIVE"), wallet(20, 500, "ACTIVE"));
+        when(loadTransactionPort.loadByReferenceCode(KEY)).thenReturn(Optional.of(
+                Transaction.builder().id(101L).referenceCode(KEY).type("TRANSFER")
+                        .sourceWalletId(10L).targetWalletId(20L).amount(999L).build()));
+        requestWithKey(KEY).andExpect(status().isUnprocessableContent());
+        noWrites();
+    }
+
+    private ResultActions request(String body, String jwt) throws Exception {
         return mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer " + jwt).content(body));
+    }
+
+    private ResultActions requestWithKey(String key) throws Exception {
+        return mvc.perform(post(PATH).contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + token())
+                .header("Idempotency-Key", key)
+                .content(BODY));
     }
 
     private String token() { return tokenGenerator.generateToken(User.builder().id(99L)

@@ -16,4 +16,6 @@ public class TopupCommand {
     Long amount;
 
     String description;
+
+    String idempotencyKey;
 }
