@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,9 +59,8 @@ class WithdrawEndpointTest {
                 .andExpect(jsonPath("$.data.sourceWalletId").value(10))
                 .andExpect(jsonPath("$.data.linkedBankAccountId").value(501))
                 .andExpect(jsonPath("$.data.amount").value(250));
-        var wallet = org.mockito.ArgumentCaptor.forClass(Wallet.class);
-        verify(saveWalletPort).save(wallet.capture());
-        assertEquals(750L, wallet.getValue().getBalance());
+        verify(saveWalletPort).debitIfSufficient(10L, 250L);
+        verify(saveWalletPort, never()).save(any());
         var tx = org.mockito.ArgumentCaptor.forClass(Transaction.class);
         verify(saveTransactionPort).save(tx.capture());
         assertEquals("WITHDRAW", tx.getValue().getType());
@@ -71,9 +71,8 @@ class WithdrawEndpointTest {
     @Test void fullBalanceCanBeWithdrawn() throws Exception {
         stub(250, "ACTIVE", "ACTIVE");
         request(BODY, token()).andExpect(status().isOk());
-        var wallet = org.mockito.ArgumentCaptor.forClass(Wallet.class);
-        verify(saveWalletPort).save(wallet.capture());
-        assertEquals(0L, wallet.getValue().getBalance());
+        verify(saveWalletPort).debitIfSufficient(10L, 250L);
+        verify(saveWalletPort, never()).save(any());
     }
 
     @Test void insufficientBalanceReturns400WithoutWrites() throws Exception {
@@ -145,6 +144,8 @@ class WithdrawEndpointTest {
                 ? Optional.empty() : Optional.of(LinkedBankAccount.builder()
                 .id(501L).walletId(10L).status(bankStatus).build()));
         when(saveTransactionPort.save(any(Transaction.class))).thenAnswer(call -> call.getArgument(0));
+        when(saveWalletPort.debitIfSufficient(anyLong(), anyLong())).thenReturn(true);
+        when(saveWalletPort.credit(anyLong(), anyLong())).thenReturn(true);
     }
 
     private void noBusinessCalls() { verifyNoInteractions(getWalletUseCase, loadWalletPort,

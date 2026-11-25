@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +47,8 @@ public class TransactionServiceIdempotencyTest {
     void wallets() {
         lenient().when(loadWalletPort.loadById(10L)).thenReturn(Optional.of(wallet(10, "WAL10", 1000)));
         lenient().when(loadWalletPort.loadByWalletNumber("WAL20")).thenReturn(Optional.of(wallet(20, "WAL20", 500)));
+        lenient().when(saveWalletPort.debitIfSufficient(anyLong(), anyLong())).thenReturn(true);
+        lenient().when(saveWalletPort.credit(anyLong(), anyLong())).thenReturn(true);
     }
 
     @Test
@@ -56,7 +59,8 @@ public class TransactionServiceIdempotencyTest {
         Transaction tx = service.transfer(new TransferCommand(10L, "WAL20", 250L, "coffee", KEY));
 
         assertEquals(KEY, tx.getReferenceCode());
-        verify(saveWalletPort, times(2)).save(any());
+        verify(saveWalletPort).debitIfSufficient(10L, 250L);
+        verify(saveWalletPort).credit(20L, 250L);
         verify(saveTransactionPort).save(any());
     }
 
@@ -68,7 +72,7 @@ public class TransactionServiceIdempotencyTest {
         Transaction result = service.transfer(new TransferCommand(10L, "WAL20", 250L, "coffee", KEY));
 
         assertSame(existing, result);
-        verify(saveWalletPort, never()).save(any());
+        verifyNoInteractions(saveWalletPort);
         verify(saveTransactionPort, never()).save(any());
     }
 
@@ -93,7 +97,7 @@ public class TransactionServiceIdempotencyTest {
         Transaction result = service.topup(new TopupCommand(10L, 5L, 300L, "nap tien", KEY));
 
         assertSame(existing, result);
-        verify(saveWalletPort, never()).save(any());
+        verifyNoInteractions(saveWalletPort);
         verify(saveTransactionPort, never()).save(any());
     }
 
@@ -106,7 +110,7 @@ public class TransactionServiceIdempotencyTest {
         Transaction result = service.withdraw(new WithdrawCommand(10L, 5L, 300L, "rut tien", KEY));
 
         assertSame(existing, result);
-        verify(saveWalletPort, never()).save(any());
+        verifyNoInteractions(saveWalletPort);
         verify(saveTransactionPort, never()).save(any());
     }
 
