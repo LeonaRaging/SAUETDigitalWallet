@@ -43,24 +43,13 @@ public class WalletPersistenceAdapter implements LoadWalletPort, SaveWalletPort 
         return walletMapper.toDomain(saved);
     }
 
-    // No @Transactional here: callers (topup/withdraw/transfer) already run in a transaction.
     @Override
-    public boolean debitIfSufficient(Long walletId, double amount) {
-        return walletRepository.debitIfSufficient(walletId, toWholeAmount(amount)) == 1;
+    public boolean debitIfSufficient(Long walletId, Long amount) {
+        return walletRepository.debitIfSufficient(walletId, amount) == 1;
     }
 
     @Override
-    public boolean credit(Long walletId, double amount) {
-        return walletRepository.credit(walletId, toWholeAmount(amount)) == 1;
-    }
-
-    // The port takes double, but balances are stored as whole numbers (BIGINT / Long),
-    // so reject fractional amounts instead of silently truncating them.
-    private static long toWholeAmount(double amount) {
-        long whole = (long) amount;
-        if (whole != amount) {
-            throw new IllegalArgumentException("Amount must be a whole number: " + amount);
-        }
-        return whole;
+    public boolean credit(Long walletId, Long amount) {
+        return walletRepository.credit(walletId, amount) == 1;
     }
 }
