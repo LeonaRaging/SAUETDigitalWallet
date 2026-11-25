@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -63,9 +64,8 @@ class TopupEndpointTest {
                 .andExpect(jsonPath("$.data.amount").value(250))
                 .andExpect(jsonPath("$.data.sourceWalletId").doesNotExist())
                 .andExpect(jsonPath("$.data.referenceCode").isNotEmpty());
-        var wallet = org.mockito.ArgumentCaptor.forClass(Wallet.class);
-        verify(saveWalletPort).save(wallet.capture());
-        assertEquals(1250L, wallet.getValue().getBalance());
+        verify(saveWalletPort).credit(10L, 250L);
+        verify(saveWalletPort, never()).save(any());
         var tx = org.mockito.ArgumentCaptor.forClass(Transaction.class);
         verify(saveTransactionPort).save(tx.capture());
         assertEquals("TOPUP", tx.getValue().getType());
@@ -164,6 +164,8 @@ class TopupEndpointTest {
                 LinkedBankAccount.builder().id(501L).walletId(10L).status(bankStatus).build()));
         when(saveTransactionPort.save(any(Transaction.class)))
                 .thenAnswer(call -> call.getArgument(0));
+        when(saveWalletPort.credit(anyLong(), anyLong())).thenReturn(true);
+        when(saveWalletPort.debitIfSufficient(anyLong(), anyLong())).thenReturn(true);
     }
 
     private void noBusinessCalls() {
