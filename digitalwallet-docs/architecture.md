@@ -244,6 +244,12 @@ Hệ thống kết nối trực tiếp với CSDL MySQL (được đặc tả ch
    - Tầng CSDL có ràng buộc cứng `CHECK (balance >= 0)`. Nếu ứng dụng xảy ra lỗi logic, Database Engine sẽ từ chối lệnh và tự động ngắt kết nối.
 4. **Sổ cái bất biến (Immutable Ledger):**
    - Bảng `transactions` chỉ hỗ trợ thao tác ghi thêm (`INSERT`), không cung cấp cơ chế cập nhật (`UPDATE`) hoặc xóa (`DELETE`).
+5. **Cập nhật số dư bằng UPDATE có điều kiện (I2):**
+   - Trừ tiền dùng một câu duy nhất: `UPDATE wallets SET balance = balance - :amount, version = version + 1, updated_at = NOW() WHERE id = :id AND status = 'ACTIVE' AND balance >= :amount`. Cộng tiền dùng câu tương tự với `balance = balance + :amount` và không cần điều kiện số dư.
+   - Cập nhật 1 dòng nghĩa là thành công. Cập nhật 0 dòng nghĩa là không đủ số dư (hoặc ví không `ACTIVE`): service ném `InsufficientBalanceException` và client nhận `400`.
+   - **Vì sao bỏ kiểu đọc → kiểm tra → ghi:** hai request có thể cùng đọc một số dư, cùng qua bước kiểm tra, rồi cùng ghi. `@Version` chặn request ghi sau nên tiền không sai, nhưng request đó nhận `409 Concurrent transaction conflict` thay vì câu trả lời đúng "không đủ số dư". Với UPDATE có điều kiện, MySQL khóa dòng ví trong lúc chạy câu lệnh nên các lệnh trừ tiền chạy lần lượt; lệnh sau thấy số dư đã bị trừ và nhận `400` gọn gàng, không còn khoảng hở giữa đọc và ghi.
+   - **Vì sao transfer khóa theo `id` tăng dần:** mỗi câu UPDATE giữ khóa dòng đến khi transaction commit. Nếu "A → B" khóa A rồi chờ B trong khi "B → A" khóa B rồi chờ A thì sẽ deadlock. Khi mọi transfer luôn cập nhật ví có `id` nhỏ hơn trước, deadlock không thể xảy ra.
+   - Câu SQL nằm trong `WalletRepository` (adapter persistence); service chỉ gọi `SaveWalletPort.debitIfSufficient` / `credit` và nhận `true`/`false`, nên tầng nghiệp vụ vẫn không import thư viện DB.
 
 ---
 
