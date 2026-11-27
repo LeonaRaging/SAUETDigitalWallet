@@ -9,8 +9,8 @@ import sa.uet.digitalwallet_system.application.port.in.TransferCommand;
 import sa.uet.digitalwallet_system.application.port.in.WithdrawCommand;
 import sa.uet.digitalwallet_system.application.port.out.*;
 import sa.uet.digitalwallet_system.domain.exception.InsufficientBalanceException;
+import sa.uet.digitalwallet_system.domain.exception.WalletNotActiveException;
 import sa.uet.digitalwallet_system.domain.model.LinkedBankAccount;
-import sa.uet.digitalwallet_system.domain.model.Transaction;
 import sa.uet.digitalwallet_system.domain.model.Wallet;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +25,6 @@ class TransactionServiceBalanceTest {
     @Mock SaveWalletPort saveWalletPort;
     @Mock LoadLinkedBankPort loadLinkedBankPort;
     @Mock SaveTransactionPort saveTransactionPort;
-    @Mock LoadTransactionPort loadTransactionPort;
     @InjectMocks TransactionService service;
 
     @Test
@@ -65,6 +64,18 @@ class TransactionServiceBalanceTest {
 
         assertThrows(InsufficientBalanceException.class,
                 () -> service.withdraw(new WithdrawCommand(10L, 5L, 300L, "test", null)));
+        verifyNoInteractions(saveTransactionPort);
+    }
+
+    @Test
+    void transfer_whenCreditFails_throwsAndSavesNoTransaction() {
+        when(loadWalletPort.loadById(10L)).thenReturn(Optional.of(wallet(10, "WAL10", 1000)));
+        when(loadWalletPort.loadByWalletNumber("WAL20")).thenReturn(Optional.of(wallet(20, "WAL20", 0)));
+        when(saveWalletPort.debitIfSufficient(10L, 250L)).thenReturn(true);
+        when(saveWalletPort.credit(20L, 250L)).thenReturn(false);   // receiver frozen meanwhile
+
+        assertThrows(WalletNotActiveException.class,
+                () -> service.transfer(new TransferCommand(10L, "WAL20", 250L, "test", null)));
         verifyNoInteractions(saveTransactionPort);
     }
 

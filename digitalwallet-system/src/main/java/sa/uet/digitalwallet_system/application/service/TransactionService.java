@@ -174,18 +174,13 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
 
         LocalDateTime now = LocalDateTime.now();
 
-        boolean debited;
+        long amount = command.getAmount();
         if (source.getId() < target.getId()) {
-            debited = saveWalletPort.debitIfSufficient(source.getId(), command.getAmount());
-            if (debited) {
-                saveWalletPort.credit(target.getId(), command.getAmount());
-            }
+            if (!saveWalletPort.debitIfSufficient(source.getId(), amount)) throw new InsufficientBalanceException();
+            if (!saveWalletPort.credit(target.getId(), amount)) throw new WalletNotActiveException(target.getWalletNumber());
         } else {
-            saveWalletPort.credit(target.getId(), command.getAmount());
-            debited = saveWalletPort.debitIfSufficient(source.getId(), command.getAmount());
-        }
-        if (!debited) {
-            throw new InsufficientBalanceException(); // @Transactional rollback cả khoản đã cộng
+            if (!saveWalletPort.credit(target.getId(), amount)) throw new WalletNotActiveException(target.getWalletNumber());
+            if (!saveWalletPort.debitIfSufficient(source.getId(), amount)) throw new InsufficientBalanceException();
         }
 
         Transaction tx = Transaction.builder()
