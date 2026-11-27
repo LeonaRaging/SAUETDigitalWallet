@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,12 +62,9 @@ class TransferEndpointTest {
                 .andExpect(jsonPath("$.data.targetWalletId").value(20))
                 .andExpect(jsonPath("$.data.amount").value(250))
                 .andExpect(jsonPath("$.data.linkedBankAccountId").doesNotExist());
-        var captor = org.mockito.ArgumentCaptor.forClass(Wallet.class);
-        verify(saveWalletPort, times(2)).save(captor.capture());
-        assertEquals(10L, captor.getAllValues().get(0).getId());
-        assertEquals(750L, captor.getAllValues().get(0).getBalance());
-        assertEquals(20L, captor.getAllValues().get(1).getId());
-        assertEquals(750L, captor.getAllValues().get(1).getBalance());
+        verify(saveWalletPort).debitIfSufficient(10L, 250L);
+        verify(saveWalletPort).credit(20L, 250L);
+        verify(saveWalletPort, never()).save(any());
         verify(saveTransactionPort).save(any(Transaction.class));
     }
 
@@ -181,6 +179,8 @@ class TransferEndpointTest {
         when(loadWalletPort.loadById(10L)).thenReturn(Optional.of(source));
         when(loadWalletPort.loadByWalletNumber("WAL20")).thenReturn(Optional.of(target));
         when(saveTransactionPort.save(any(Transaction.class))).thenAnswer(call -> call.getArgument(0));
+        when(saveWalletPort.debitIfSufficient(anyLong(), anyLong())).thenReturn(true);
+        when(saveWalletPort.credit(anyLong(), anyLong())).thenReturn(true);
     }
 
     private void noWrites() { verifyNoInteractions(saveWalletPort, saveTransactionPort); }

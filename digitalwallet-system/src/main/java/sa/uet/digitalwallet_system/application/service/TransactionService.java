@@ -66,13 +66,15 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
         }
 
         // Verify bank account belongs to user's wallet
-        loadLinkedBankPort.loadByIdAndWalletId(command.getLinkedBankAccountId(), wallet.getId())
+        var bank = loadLinkedBankPort.loadByIdAndWalletId(command.getLinkedBankAccountId(), wallet.getId())
                 .orElseThrow(LinkedBankNotFoundException::new);
+        if (!"ACTIVE".equals(bank.getStatus())) {
+            throw new WalletNotActiveException(wallet.getWalletNumber());
+        }
 
-        // Credit wallet
-        Wallet updated = wallet.withBalance(wallet.getBalance() + command.getAmount())
-                .withUpdatedAt(LocalDateTime.now());
-        saveWalletPort.save(updated);
+        if (!saveWalletPort.credit(wallet.getId(), command.getAmount())) {
+            throw new WalletNotActiveException(wallet.getWalletNumber());
+        }
 
         // Append ledger entry
         Transaction tx = Transaction.builder()
@@ -114,13 +116,15 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
         }
 
         // Verify bank account belongs to user's wallet
-        loadLinkedBankPort.loadByIdAndWalletId(command.getLinkedBankAccountId(), wallet.getId())
+        var bank = loadLinkedBankPort.loadByIdAndWalletId(command.getLinkedBankAccountId(), wallet.getId())
                 .orElseThrow(LinkedBankNotFoundException::new);
+        if (!"ACTIVE".equals(bank.getStatus())) {
+            throw new WalletNotActiveException(wallet.getWalletNumber());
+        }
 
-        // Debit wallet
-        Wallet updated = wallet.withBalance(wallet.getBalance() - command.getAmount())
-                .withUpdatedAt(LocalDateTime.now());
-        saveWalletPort.save(updated);
+        if (!saveWalletPort.debitIfSufficient(wallet.getId(), command.getAmount())) {
+            throw new InsufficientBalanceException();
+        }
 
         Transaction tx = Transaction.builder()
                 .referenceCode(key)
@@ -170,9 +174,19 @@ public class TransactionService implements TopupUseCase, WithdrawUseCase, Transf
 
         LocalDateTime now = LocalDateTime.now();
 
-        // Atomic debit source, credit target
-        saveWalletPort.save(source.withBalance(source.getBalance() - command.getAmount()).withUpdatedAt(now));
-        saveWalletPort.save(target.withBalance(target.getBalance() + command.getAmount()).withUpdatedAt(now));
+        boolean debited;
+        if (source.getId() < target.getId()) {
+            debited = saveWalletPort.debitIfSufficient(source.getId(), command.getAmount());
+            if (debited) {
+                saveWalletPort.credit(target.getId(), command.getAmount());
+            }
+        } else {
+            saveWalletPort.credit(target.getId(), command.getAmount());
+            debited = saveWalletPort.debitIfSufficient(source.getId(), command.getAmount());
+        }
+        if (!debited) {
+            throw new InsufficientBalanceException(); // @Transactional rollback cả khoản đã cộng
+        }
 
         Transaction tx = Transaction.builder()
                 .referenceCode(key)
