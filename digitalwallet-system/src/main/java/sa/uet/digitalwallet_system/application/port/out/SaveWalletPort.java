@@ -5,7 +5,7 @@ import sa.uet.digitalwallet_system.domain.model.Wallet;
 public interface SaveWalletPort {
     Wallet save(Wallet wallet);
 
-    boolean debitIfSufficient(Long walletId, double amount);
+    boolean debitIfSufficient(Long walletId, Long amount);
 
-    boolean credit(Long walletId, double amount);
+    boolean credit(Long walletId, Long amount);
 }

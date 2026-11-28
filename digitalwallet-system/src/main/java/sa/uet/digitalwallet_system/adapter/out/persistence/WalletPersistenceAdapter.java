@@ -44,12 +44,12 @@ public class WalletPersistenceAdapter implements LoadWalletPort, SaveWalletPort 
     }
 
     @Override
-    public boolean debitIfSufficient(Long walletId, double amount) {
-        throw new UnsupportedOperationException("TODO I2");
+    public boolean debitIfSufficient(Long walletId, Long amount) {
+        return walletRepository.debitIfSufficient(walletId, amount) == 1;
     }
 
     @Override
-    public boolean credit(Long walletId, double amount) {
-        throw new UnsupportedOperationException("TODO I2");
+    public boolean credit(Long walletId, Long amount) {
+        return walletRepository.credit(walletId, amount) == 1;
     }
 }
