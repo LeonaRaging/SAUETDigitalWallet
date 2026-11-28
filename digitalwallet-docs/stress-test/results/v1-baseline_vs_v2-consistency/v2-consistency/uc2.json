@@ -1,0 +1,144 @@
+{
+    "root_group": {
+        "groups": {},
+        "checks": {},
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "metrics": {
+        "http_req_duration": {
+            "avg": 20.995200759933784,
+            "min": 3.351864,
+            "med": 19.008471,
+            "max": 451.1519,
+            "p(90)": 41.7140517,
+            "p(95)": 49.24385385
+        },
+        "loser_got_400": {
+            "count": 200,
+            "rate": 10.638167864309503
+        },
+        "data_received": {
+            "count": 673234,
+            "rate": 35809.88151980272
+        },
+        "both_succeeded": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count==0": false
+            }
+        },
+        "vus_max": {
+            "max": 1,
+            "value": 1,
+            "min": 1
+        },
+        "iterations": {
+            "count": 200,
+            "rate": 10.638167864309503
+        },
+        "http_req_waiting": {
+            "avg": 20.448685474337758,
+            "min": 3.144635,
+            "med": 18.3562315,
+            "max": 449.462706,
+            "p(90)": 40.9734714,
+            "p(95)": 48.512714299999985
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_failed": {
+            "passes": 200,
+            "fails": 1008,
+            "value": 0.16556291390728478
+        },
+        "http_req_blocked": {
+            "avg": 0.05796920943708611,
+            "min": 0.003915,
+            "med": 0.007154000000000001,
+            "max": 1.367851,
+            "p(90)": 0.27111260000000004,
+            "p(95)": 0.3195280499999998
+        },
+        "http_req_receiving": {
+            "max": 5.895568,
+            "p(90)": 0.7358992999999999,
+            "p(95)": 1.1490836499999986,
+            "avg": 0.5066520943708606,
+            "min": 0.11415,
+            "med": 0.38363899999999995
+        },
+        "http_req_sending": {
+            "avg": 0.03986319122516554,
+            "min": 0.014964,
+            "med": 0.0313205,
+            "max": 0.449936,
+            "p(90)": 0.06465889999999999,
+            "p(95)": 0.08019054999999997
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 10.793728,
+            "max": 451.1519,
+            "p(90)": 36.9260257,
+            "p(95)": 44.935974550000005,
+            "avg": 18.01417906448409,
+            "min": 3.351864
+        },
+        "http_reqs": {
+            "count": 1208,
+            "rate": 64.25453390042941
+        },
+        "wrong_balance": {
+            "count": 0,
+            "rate": 0,
+            "thresholds": {
+                "count==0": false
+            }
+        },
+        "vus": {
+            "max": 1,
+            "value": 1,
+            "min": 0
+        },
+        "data_sent": {
+            "count": 507895,
+            "rate": 27015.36133721738
+        },
+        "iteration_duration": {
+            "max": 309.715601,
+            "p(90)": 129.7902887,
+            "p(95)": 143.7441373,
+            "avg": 87.95551065500004,
+            "min": 53.009112,
+            "med": 74.657808
+        },
+        "http_req_connecting": {
+            "min": 0,
+            "med": 0,
+            "max": 1.054061,
+            "p(90)": 0.1814484,
+            "p(95)": 0.19295589999999999,
+            "avg": 0.033075820364238416
+        }
+    },
+    "setup_data": {
+        "receiver": {
+            "bank": 2,
+            "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJ1YzJibXd5d2RjaGgiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzk1Nzc4ODY2LCJleHAiOjE3OTU4NjUyNjZ9.DZDLBUHy2GIIZvp8NCUReHdmlENv_gArVqD6q2iNAG7ISs4wi6hrH-t_LpUsE8OGBYMwWKFwxmlplW3q_g9RZA",
+            "wallet": "765218879218"
+        },
+        "sender": {
+            "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJ1YzJhbXd5d2RjaGgiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzk1Nzc4ODY1LCJleHAiOjE3OTU4NjUyNjV9.7svJyEqKMvIXybHungXFj9Z-DiqYp0ts-K5Be-zOr2KAz_PMZFnscJkpRCSdFbrFvhmLPDA9KOsmcUinVl3wMA",
+            "wallet": "452638417388",
+            "bank": 1
+        }
+    }
+}

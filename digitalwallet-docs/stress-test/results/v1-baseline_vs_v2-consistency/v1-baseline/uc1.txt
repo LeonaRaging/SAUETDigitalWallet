@@ -1,0 +1,21 @@
+
+     data_received..................: 551 kB 39 kB/s
+     data_sent......................: 557 kB 39 kB/s
+   ✗ extra_debits...................: 63     4.399885/s
+     http_req_blocked...............: avg=49.55µs  min=2.43µs   med=3.56µs   max=2.42ms   p(90)=8.29µs   p(95)=27.02µs 
+     http_req_connecting............: avg=26.88µs  min=0s       med=0s       max=2.35ms   p(90)=0s       p(95)=0s      
+     http_req_duration..............: avg=156.85ms min=5.73ms   med=157.04ms max=440.21ms p(90)=260.43ms p(95)=288.37ms
+       { expected_response:true }...: avg=88.13ms  min=5.73ms   med=64.81ms  max=440.21ms p(90)=201.57ms p(95)=246.57ms
+     http_req_failed................: 79.90% 887 out of 1110
+     http_req_receiving.............: avg=2.14ms   min=56.12µs  med=546.46µs max=112.39ms p(90)=5.78ms   p(95)=8.6ms   
+     http_req_sending...............: avg=34.89µs  min=10.18µs  med=13.07µs  max=2.98ms   p(90)=35.2µs   p(95)=105.34µs
+     http_req_tls_handshaking.......: avg=0s       min=0s       med=0s       max=0s       p(90)=0s       p(95)=0s      
+     http_req_waiting...............: avg=154.67ms min=5.35ms   med=154.83ms max=436.67ms p(90)=257.55ms p(95)=285.65ms
+     http_reqs......................: 1110   77.521792/s
+     iteration_duration.............: avg=258.1ms  min=178.93ms med=241.01ms max=458.83ms p(90)=340.95ms p(95)=352.37ms
+     iterations.....................: 50     3.491973/s
+   ✗ rounds_debited_once............: 0      0/s
+     vus............................: 1      min=0           max=1
+     vus_max........................: 1      min=1           max=1
+
+time="2026-11-27T11:26:42Z" level=error msg="thresholds on metrics 'extra_debits, rounds_debited_once' have been crossed"

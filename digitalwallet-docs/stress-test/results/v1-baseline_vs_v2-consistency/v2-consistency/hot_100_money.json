@@ -1,0 +1,7 @@
+{
+ "total_balance": 3015976000,
+ "expected_total": 3015976000,
+ "wallets_not_matching_ledger": 0,
+ "negative_wallets": 0,
+ "ok": true
+}

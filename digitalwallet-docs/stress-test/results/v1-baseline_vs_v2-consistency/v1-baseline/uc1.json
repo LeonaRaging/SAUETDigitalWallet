@@ -1,0 +1,138 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {}
+    },
+    "metrics": {
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 1
+        },
+        "iteration_duration": {
+            "avg": 258.10315726,
+            "min": 178.933945,
+            "med": 241.0129855,
+            "max": 458.830513,
+            "p(90)": 340.9523789,
+            "p(95)": 352.37352135
+        },
+        "http_req_sending": {
+            "p(90)": 0.035205200000000006,
+            "p(95)": 0.10534474999999996,
+            "avg": 0.034891460360360387,
+            "min": 0.010186,
+            "med": 0.013072,
+            "max": 2.988596
+        },
+        "http_req_connecting": {
+            "avg": 0.026880646846846847,
+            "min": 0,
+            "med": 0,
+            "max": 2.351646,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 88.13086448430495,
+            "min": 5.737367,
+            "med": 64.817988,
+            "max": 440.2178,
+            "p(90)": 201.57662,
+            "p(95)": 246.57594159999996
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_reqs": {
+            "rate": 77.52179167734693,
+            "count": 1110
+        },
+        "data_sent": {
+            "rate": 38897.78116451815,
+            "count": 556960
+        },
+        "http_req_failed": {
+            "fails": 223,
+            "passes": 887,
+            "value": 0.7990990990990992
+        },
+        "rounds_debited_once": {
+            "rate": 0,
+            "count": 0,
+            "thresholds": {
+                "count==50": true
+            }
+        },
+        "vus_max": {
+            "value": 1,
+            "min": 1,
+            "max": 1
+        },
+        "http_req_waiting": {
+            "avg": 154.67368708288274,
+            "min": 5.356936,
+            "med": 154.8333435,
+            "max": 436.675353,
+            "p(90)": 257.55151490000003,
+            "p(95)": 285.65146135
+        },
+        "iterations": {
+            "count": 50,
+            "rate": 3.4919725980786906
+        },
+        "http_req_blocked": {
+            "max": 2.42391,
+            "p(90)": 0.0082928,
+            "p(95)": 0.027026799999999965,
+            "avg": 0.04955839279279276,
+            "min": 0.002436,
+            "med": 0.0035605
+        },
+        "data_received": {
+            "count": 550932,
+            "rate": 38476.78894809378
+        },
+        "extra_debits": {
+            "count": 63,
+            "rate": 4.39988547357915,
+            "thresholds": {
+                "count==0": true
+            }
+        },
+        "http_req_duration": {
+            "avg": 156.853472145946,
+            "min": 5.737367,
+            "med": 157.041679,
+            "max": 440.2178,
+            "p(90)": 260.43845200000004,
+            "p(95)": 288.37155565
+        },
+        "http_req_receiving": {
+            "min": 0.056126,
+            "med": 0.546461,
+            "max": 112.396956,
+            "p(90)": 5.788799700000001,
+            "p(95)": 8.608831199999997,
+            "avg": 2.144893602702705
+        }
+    },
+    "setup_data": {
+        "sender": {
+            "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxIiwidXNlcm5hbWUiOiJ1YzFhbXd5d2Jvb2IiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzk1Nzc4Nzg4LCJleHAiOjE3OTU4NjUxODh9.au9oFtRFdVcx74oyp5B0ps5gi_U-Mqe_NeElVQIUxocuqbBEtGEQNCgOlOzn4Zc7_EFAIZ9pL9Knuqwz1vSX7g",
+            "wallet": "527701718738"
+        },
+        "receiver": {
+            "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJ1YzFibXd5d2Jvb2IiLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzk1Nzc4Nzg5LCJleHAiOjE3OTU4NjUxODl9.1Qkpf9ofBeBnbgnCjYqKbhXnMknk_l3LRfZwtMT-rw03cu-GLW5OISvmkL1vhaK3v2I2cef1O9aRIGoFHKnIjA",
+            "wallet": "523541780765"
+        }
+    }
+}
